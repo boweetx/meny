@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Выбор меню — Ресторан «Аура»</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card-bg: #1a1d26;
+      --accent: #f59e0b;
+      --accent-hover: #d97706;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --border: #2d3342;
+      --success: #10b981;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: var(--bg); color: var(--text); padding-bottom: 100px; }
+    header { background: #141721; border-bottom: 1px solid var(--border); padding: 16px 20px; position: sticky; top: 0; z-index: 100; display: flex; justify-content: space-between; align-items: center; }
+    header h1 { font-size: 18px; font-weight: 700; color: #fff; }
+    header span { font-size: 13px; color: var(--accent); }
+    
+    .container { max-width: 680px; margin: 0 auto; padding: 16px; }
+    
+    .user-block { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 16px; }
+    .user-block label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+    .user-block input { width: 100%; padding: 10px 12px; background: #0f1117; border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 15px; }
+
+    .search-block { margin-bottom: 14px; }
+    .search-block input { width: 100%; padding: 10px 14px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; color: #fff; font-size: 14px; outline: none; }
+    .search-block input:focus { border-color: var(--accent); }
+
+    .categories { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; scrollbar-width: none; }
+    .categories::-webkit-scrollbar { display: none; }
+    .cat-btn { background: var(--card-bg); border: 1px solid var(--border); color: var(--text-muted); padding: 8px 14px; border-radius: 20px; white-space: nowrap; font-size: 13px; cursor: pointer; }
+    .cat-btn.active { background: var(--accent); color: #000; font-weight: 600; border-color: var(--accent); }
+
+    .items-grid { display: flex; flex-direction: column; gap: 10px; }
+    .item-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; padding: 14px; display: flex; justify-content: space-between; align-items: center; }
+    .item-info { flex: 1; padding-right: 12px; }
+    .item-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .item-desc { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; line-height: 1.3; }
+    .item-meta { font-size: 14px; font-weight: 700; color: var(--accent); }
+    .item-weight { font-size: 12px; font-weight: 400; color: var(--text-muted); margin-left: 6px; }
+
+    .counter { display: flex; align-items: center; gap: 8px; }
+    .counter button { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: #262b38; color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .counter button:active { background: var(--accent); color: #000; }
+    .counter span { font-size: 15px; font-weight: 600; min-width: 20px; text-align: center; }
+
+    .bottom-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #141721; border-top: 1px solid var(--border); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; z-index: 100; }
+    .total-price { font-size: 18px; font-weight: 700; color: #fff; }
+    .total-count { font-size: 12px; color: var(--text-muted); }
+    .action-btn { background: var(--accent); color: #000; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 14px; }
+    .action-btn:active { background: var(--accent-hover); }
+
+    /* Modal */
+    .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; align-items: center; justify-content: center; padding: 16px; }
+    .modal.active { display: flex; }
+    .modal-content { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 480px; padding: 20px; max-height: 90vh; overflow-y: auto; }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+    .order-list { margin-bottom: 16px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; background: #12151e; padding: 12px; border-radius: 8px; border: 1px solid var(--border); }
+    .btn-group { display: flex; flex-direction: column; gap: 8px; }
+    .btn-tg { background: #229ED9; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; text-align: center; font-size: 14px; }
+    .btn-copy { background: #374151; color: #fff; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 14px; }
+    .btn-close { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 10px; border-radius: 10px; cursor: pointer; margin-top: 4px; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div>
+      <h1>Ресторан «Аура»</h1>
+      <span>Проводы в армию</span>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="user-block">
+      <label for="userName">Ваше имя или ник:</label>
+      <input type="text" id="userName" placeholder="Например: Иван" oninput="saveName()">
+    </div>
+
+    <div class="search-block">
+      <input type="text" id="searchInput" placeholder="Поиск блюда..." oninput="renderItems()">
+    </div>
+
+    <div class="categories" id="categoryContainer"></div>
+    <div class="items-grid" id="itemsContainer"></div>
+  </div>
+
+  <div class="bottom-bar">
+    <div>
+      <div class="total-price" id="totalPrice">0 ₽</div>
+      <div class="total-count" id="totalCount">Блюд не выбрано</div>
+    </div>
+    <button class="action-btn" onclick="openOrderModal()">Оформить заказ</button>
+  </div>
+
+  <div class="modal" id="orderModal">
+    <div class="modal-content">
+      <h2 class="modal-title">Ваш заказ</h2>
+      <div class="order-list" id="modalOrderList"></div>
+      <div class="btn-group">
+        <button class="btn-tg" onclick="shareToTelegram()">Отправить в Telegram</button>
+        <button class="btn-copy" onclick="copyOrderText()">Скопировать список</button>
+        <button class="btn-close" onclick="closeOrderModal()">Вернуться к меню</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const MENU = [
+      // ХИНКАЛИ
+      { cat: "Хинкали", name: "Хинкали Свинина-Говядина (1 шт)", price: 139, weight: "1 шт" },
+      { cat: "Хинкали", name: "Хинкали Баранина (1 шт)", price: 119, weight: "1 шт" },
+      { cat: "Хинкали", name: "Хинкали Курица (1 шт)", price: 129, weight: "1 шт" },
+      { cat: "Хинкали", name: "Хинкали Грибы (1 шт)", price: 119, weight: "1 шт" },
+      { cat: "Хинкали", name: "Хинкали Сыр (1 шт)", price: 119, weight: "1 шт" },
+      { cat: "Хинкали", name: "Хинкали Вишня (1 шт)", price: 99, weight: "1 шт" },
+      { cat: "Хинкали", name: "Жареные хинкали Свинина-Говядина (3 шт)", price: 450, weight: "3 шт" },
+      { cat: "Хинкали", name: "Жареные хинкали Баранина (3 шт)", price: 450, weight: "3 шт" },
+
+      // ХОЛОДНЫЕ ЗАКУСКИ
+      { cat: "Холодные закуски", name: "Тарелка домашнего мяса (Халяль)", price: 790, weight: "230 г", desc: "Говяжий язык, куриный рулет, ростбиф, паштет из мяса птицы" },
+      { cat: "Холодные закуски", name: "Мясное собрание", price: 790, weight: "230 г", desc: "Итальянская салями, ветчина лионская, чоризо, сервелат, огурчики кимчи, томаты черри, горчица" },
+      { cat: "Холодные закуски", name: "Ас-Арба (Халяль)", price: 790, weight: "195 г", desc: "Казы, бастурма сырокопченая, батыр из конины, огурчики кимчи, томаты черри, горчица" },
+      { cat: "Холодные закуски", name: "Ни рыба, ни мясо! (Халяль)", price: 590, weight: "250 г", desc: "Огурчики кимчи, маринованные томаты, шампиньоны, квашеная капуста, батыр из конины" },
+      { cat: "Холодные закуски", name: "Мезе из сезонных овощей", price: 510, weight: "275 г", desc: "Огурцы, болгарский перец, помидоры, редис, брынза, маслины, зелень" },
+      { cat: "Холодные закуски", name: "Сырная палитра", price: 820, weight: "270 г", desc: "Пармезан, маасдам, халуми, сыр с грецким орехом и лисичками, мед, крекеры, ягоды" },
+      { cat: "Холодные закуски", name: "Мезе к вину", price: 790, weight: "220 г", desc: "Оливки, маслины, черри, моцарелла, каперсы, вяленые томаты, зелень с бальзамической заправкой" },
+      { cat: "Холодные закуски", name: "Морской деликатес", price: 890, weight: "160 г", desc: "Слабосоленый лосось, балык, чавыча холодного копчения" },
+      { cat: "Холодные закуски", name: "Сет под жгучую", price: 650, weight: "320 г", desc: "Сырокопченая бастурма, филе сельди, шпроты, зеленые гренки, молодой картофель, огурчики кимчи, квашеная капуста" },
+      { cat: "Холодные закуски", name: "Скромный улов", price: 650, weight: "280 г", desc: "Слабосоленые анчоусы, филе сельди с картофелем, огурчики кимчи, маринованный лук" },
+      { cat: "Холодные закуски", name: "Язычки «Баже-Чиз» с грецким орехом", price: 490, weight: "220 г" },
+      { cat: "Холодные закуски", name: "Креп гравлакс", price: 690, weight: "150 г", desc: "Блинчики с крем-чизом и слабосоленым лососем" },
+
+      // БРУСКЕТТЫ
+      { cat: "Брускетты", name: "Брускетта «Кранч-Панч» с лососем", price: 590, weight: "190 г" },
+      { cat: "Брускетты", name: "Брускетта «Ростбиф Крустини»", price: 490, weight: "150 г" },
+      { cat: "Брускетты", name: "Брускетта «Чипс-Криль» с креветками", price: 490, weight: "180 г" },
+
+      // САЛАТЫ
+      { cat: "Салаты", name: "Салат с баклажанами и сливочным сыром", price: 360, weight: "180 г", desc: "Свежие помидоры, кинза, семена подсолнуха, кунжут, сладкий чили" },
+      { cat: "Салаты", name: "Салат Греческий", price: 490, weight: "190 г" },
+      { cat: "Салаты", name: "Цезарь с курицей", price: 480, weight: "195 г" },
+      { cat: "Салаты", name: "Салат «Аура»", price: 570, weight: "195 г", desc: "Говядина, филе курицы, огурчики кимчи, перец, черри, салат в корзине из пармезана, соус цезарь" },
+      { cat: "Салаты", name: "Салат с креветками и сыром халуми", price: 750, weight: "210 г", desc: "Тигровые креветки, халуми, листья салата, томаты черри, апельсин, мятный соус" },
+      { cat: "Салаты", name: "Салат с лососем и тигровыми креветками", price: 720, weight: "150 г", desc: "Листья салата, томаты черри, стручковая фасоль, соус песто" },
+      { cat: "Салаты", name: "Цезарь с креветками", price: 590, weight: "195 г" },
+      { cat: "Салаты", name: "Салат с курицей и соусом тар-тар", price: 520, weight: "200 г", desc: "Куриное филе, копченая грудка, помидоры, черри, листья салата, кедровый орех" },
+      { cat: "Салаты", name: "Гриль салат с бараниной", price: 520, weight: "180 г", desc: "Баранина, цукини, баклажаны, перец, чечил, салат с чесночным соусом" },
+      { cat: "Салаты", name: "Салат «Бальзамико» с говядиной", price: 650, weight: "180 г", desc: "Говядина, свежие овощи, красный лук, салат, гранат, бальзамическая заправка" },
+      { cat: "Салаты", name: "Салат с говядиной «Чача»", price: 550, weight: "190 г", desc: "Говядина, свежие и вяленые овощи, салат с фирменным соусом чача" },
+
+      // ГОРЯЧИЕ ЗАКУСКИ
+      { cat: "Горячие закуски", name: "Долма с бараниной", price: 430, weight: "220 г" },
+      { cat: "Горячие закуски", name: "Хруст & Глянец", price: 480, weight: "250 г" },
+      { cat: "Горячие закуски", name: "Картофельные крокеты с лососем", price: 590, weight: "190 г" },
+      { cat: "Горячие закуски", name: "Сырные шарики со сливочно-чесночным соусом", price: 450, weight: "190 г" },
+      { cat: "Горячие закуски", name: "Картофельные вафли с томатами", price: 360, weight: "220 г" },
+      { cat: "Горячие закуски", name: "Картофельные вафли с курицей и шампиньонами", price: 420, weight: "190 г" },
+      { cat: "Горячие закуски", name: "Картофельные вафли с лососем", price: 560, weight: "220 г" },
+      { cat: "Горячие закуски", name: "Сет к пенному №1 (Сырный)", price: 790, weight: "330 г", desc: "Сыр чечил, жареная коса, сырные палочки, сырные шарики, чипсы из лаваша, соусы барбекю и чесночный" },
+      { cat: "Горячие закуски", name: "Сет к пенному №2 (Мясной)", price: 850, weight: "420 г", desc: "Куриные стрипсы, карпаччо из птицы, крылышки, колбаски, чипсы из лаваша, соусы" },
+      { cat: "Горячие закуски", name: "Сет к пенному №3 (Фри и кольца)", price: 720, weight: "410 г", desc: "Кольца кальмара, луковые кольца, картофель фри, чесночные гренки, чипсы из лаваша, соусы" },
+
+      // ВЫПЕЧКА И ПИРОГИ
+      { cat: "Выпечка и Пироги", name: "Хачапури по-аджарски", price: 540, weight: "450 г" },
+      { cat: "Выпечка и Пироги", name: "Хачапури по-аджарски МИНИ", price: 390, weight: "200 г" },
+      { cat: "Выпечка и Пироги", name: "Хачапури фирменный «Аура»", price: 790, weight: "490 г" },
+      { cat: "Выпечка и Пироги", name: "Хачапури по-имеретински", price: 650, weight: "400 г" },
+      { cat: "Выпечка и Пироги", name: "Хачапури по-имеретински МИНИ", price: 390, weight: "200 г" },
+      { cat: "Выпечка и Пироги", name: "Хачапури по-мегрельски", price: 670, weight: "420 г" },
+      { cat: "Выпечка и Пироги", name: "Хачапури по-мегрельски МИНИ", price: 390, weight: "200 г" },
+      { cat: "Выпечка и Пироги", name: "Осетинский пирог с курицей", price: 680, weight: "550 г" },
+      { cat: "Выпечка и Пироги", name: "Хачапицца", price: 790, weight: "620 г", desc: "Фирменное тесто, соус сацебели, томаты, перец, куриные колбаски, ростбиф с тремя видами сыра" },
+      { cat: "Выпечка и Пироги", name: "Пиде (напоминающее пиццу)", price: 680, weight: "450 г" },
+      { cat: "Выпечка и Пироги", name: "Слоеный грибной тарт", price: 790, weight: "600 г" },
+      { cat: "Выпечка и Пироги", name: "Чебурек Свинина-Говядина", price: 390, weight: "190 г" },
+      { cat: "Выпечка и Пироги", name: "Чебурек Баранина", price: 390, weight: "190 г" },
+      { cat: "Выпечка и Пироги", name: "Чебурек Сыр", price: 390, weight: "190 г" },
+
+      // СУПЫ
+      { cat: "Супы", name: "Лапша куриная", price: 280, weight: "270 г" },
+      { cat: "Супы", name: "Борщ с говядиной", price: 390, weight: "300 г" },
+      { cat: "Супы", name: "Солянка мясная", price: 490, weight: "300 г" },
+      { cat: "Супы", name: "Хашлама из баранины", price: 490, weight: "300 г" },
+      { cat: "Супы", name: "Крем-суп грибной", price: 390, weight: "270 г" },
+      { cat: "Супы", name: "Уха с лососем", price: 390, weight: "250 г" },
+      { cat: "Супы", name: "Том Ям", price: 690, weight: "350 г" },
+
+      // ГОРЯЧИЕ БЛЮДА
+      { cat: "Горячие блюда", name: "Курица с овощами в соусе Терияки", price: 550, weight: "260 г", desc: "Цукини, болгарский перец, морковь, имбирь" },
+      { cat: "Горячие блюда", name: "Куриное филе в сливочно-грибном соусе с драником", price: 520, weight: "240 г" },
+      { cat: "Горячие блюда", name: "Филе трески с овощами", price: 790, weight: "310 г", desc: "Цукини, болгарский перец, брокколи, томаты черри в соево-медовой глазировке" },
+      { cat: "Горячие блюда", name: "Филе лосося с овощами гриль", price: 990, weight: "240 г", desc: "Баклажан, цукини, болгарский перец, томаты" },
+      { cat: "Горячие блюда", name: "Запеченный лосось с пармезаном и овощами", price: 840, weight: "300 г", desc: "Молодой картофель, брокколи в сливочно-сырной заливке" },
+      { cat: "Горячие блюда", name: "Котлетос с картофелем фри и грибным соусом", price: 720, weight: "340 г" },
+      { cat: "Горячие блюда", name: "Сковородка по-домашнему", price: 670, weight: "320 г", desc: "Картофель фри, куриные колбаски, черри, яйцо в сметанно-чесночном соусе" },
+      { cat: "Горячие блюда", name: "Азиатская сковородка", price: 630, weight: "320 г", desc: "Картофельные дольки, куриные стрипсы, перец, черри, лук, сливки, сладкий чили" },
+      { cat: "Горячие блюда", name: "Оджахури с говядиной", price: 650, weight: "350 г", desc: "Кусочки мяса обжаренные с луком, болгарским перцем, картофелем, томатами, специями и гранатом" },
+      { cat: "Горячие блюда", name: "Оджахури с курицей", price: 590, weight: "350 г", desc: "Курица с картофелем, луком, перцем, томатами и зернами граната" },
+      { cat: "Горячие блюда", name: "Беф а ля Строганов с картофельным пюре", price: 690, weight: "360 г", desc: "С картофельным пюре и сушеным луком" },
+      { cat: "Горячие блюда", name: "Говяжьи щечки с пюре и демиглас", price: 830, weight: "280 г" },
+      { cat: "Горячие блюда", name: "Говядина с овощами в соусе карри", price: 620, weight: "260 г", desc: "Молодой картофель, красный лук, морковь" },
+
+      // БАНКЕТНЫЕ БЛЮДА (ПРЕДЗАКАЗ)
+      { cat: "Банкетные блюда", name: "Королевский шах-плов (предзаказ)", price: 3800, weight: "2900 г", desc: "Рис с сухофруктами, мясом и специями, завернутые в лаваш и запеченные в духовке" },
+      { cat: "Банкетные блюда", name: "Томленая говядина с картофелем и грибами (предзаказ)", price: 3300, weight: "1200 г" },
+      { cat: "Банкетные блюда", name: "Бешбармак", price: 570, weight: "350 г", desc: "Отварное мясо, тонкое тесто, лук, подается с бульоном" },
+
+      // МАНГАЛ И ГРИЛЬ
+      { cat: "Мангал и Гриль", name: "Шашлык из свиной шеи", price: 600, weight: "200 г" },
+      { cat: "Мангал и Гриль", name: "Шашлык из баранины", price: 770, weight: "200 г" },
+      { cat: "Мангал и Гриль", name: "Корейка баранины", price: 750, weight: "250 г" },
+      { cat: "Мангал и Гриль", name: "Шашлык из курицы", price: 490, weight: "200 г" },
+      { cat: "Мангал и Гриль", name: "Шашлык из куриных крылышек", price: 400, weight: "200 г" },
+      { cat: "Мангал и Гриль", name: "Люля-кебаб из свинины", price: 520, weight: "200 г" },
+      { cat: "Мангал и Гриль", name: "Люля-кебаб из баранины", price: 590, weight: "200 г" },
+      { cat: "Мангал и Гриль", name: "Люля-кебаб из курицы", price: 460, weight: "200 г" },
+      { cat: "Мангал и Гриль", name: "Люля-кебаб из курицы в лаваше", price: 500, weight: "250 г" },
+      { cat: "Мангал и Гриль", name: "Стейк из телятины", price: 950, weight: "250 г" },
+      { cat: "Мангал и Гриль", name: "Рыба Дорадо на гриле", price: 1100, weight: "250 г" },
+      { cat: "Мангал и Гриль", name: "Стейк из семги на гриле", price: 1300, weight: "280 г" },
+      { cat: "Мангал и Гриль", name: "Скумбрия на гриле", price: 800, weight: "270 г" },
+
+      // АССОРТИ ИЗ ШАШЛЫКОВ НА КОМПАНИЮ
+      { cat: "Ассорти шашлыков", name: "Ассорти «По-кавказски»", price: 3800, weight: "1500 г", desc: "Корейка баранины, шашлык из баранины, куриное филе, люля баранина и курица, картофель, овощи на углях" },
+      { cat: "Ассорти шашлыков", name: "Ассорти «По-европейски»", price: 3300, weight: "1500 г", desc: "Шашлык из свиной шеи, свиные ребрышки, крылышки, люля свинина и курица, картофель, шампиньоны" },
+      { cat: "Ассорти шашлыков", name: "Ассорти «По-тюркски»", price: 1950, weight: "2000 г", desc: "Баранья шея, бараньи ноги, картофель, помидоры черри" },
+
+      // ГАРНИРЫ
+      { cat: "Гарниры", name: "Овощи гриль", price: 310, weight: "160 г" },
+      { cat: "Гарниры", name: "Шампиньоны на углях", price: 390, weight: "150 г" },
+      { cat: "Гарниры", name: "Картофель молодой с зеленью", price: 230, weight: "150 г" },
+      { cat: "Гарниры", name: "Цуккино-палочки", price: 260, weight: "150 г" },
+      { cat: "Гарниры", name: "Картофель фри", price: 270, weight: "150 г" },
+      { cat: "Гарниры", name: "Картофельные дольки", price: 270, weight: "150 г" },
+      { cat: "Гарниры", name: "Жареная спаржа с грецким орехом", price: 430, weight: "120 г" },
+
+      // СОУСЫ
+      { cat: "Соусы", name: "Сметана", price: 59, weight: "50 г" },
+      { cat: "Соусы", name: "Сацебели", price: 59, weight: "50 г" },
+      { cat: "Соусы", name: "1000 островов", price: 59, weight: "50 г" },
+      { cat: "Соусы", name: "Майонез домашний", price: 59, weight: "50 г" },
+      { cat: "Соусы", name: "Горчица", price: 59, weight: "50 г" },
+      { cat: "Соусы", name: "Соус Барбекю", price: 59, weight: "50 г" },
+      { cat: "Соусы", name: "Соус Наршараб", price: 99, weight: "50 г" },
+      { cat: "Соусы", name: "Соус Сладкий чили", price: 99, weight: "50 г" },
+      { cat: "Соусы", name: "Сливочно-чесночный соус", price: 99, weight: "50 г" },
+      { cat: "Соусы", name: "Томатный соус", price: 99, weight: "50 г" },
+      { cat: "Соусы", name: "Соус Цезарь", price: 99, weight: "50 г" },
+      { cat: "Соусы", name: "Соус Табаско", price: 99, weight: "10 г" },
+      { cat: "Соусы", name: "Соус Тар-тар", price: 99, weight: "50 г" },
+      { cat: "Соусы", name: "Мацони", price: 99, weight: "50 г" },
+
+      // ДЕСЕРТЫ
+      { cat: "Десерты", name: "Кюнефе (турецкий десерт)", price: 390, weight: "130 г" },
+      { cat: "Десерты", name: "Чизкейк в ассортименте", price: 320, weight: "165 г", desc: "Манго-чиа, шоколадный, фисташка-малина, классика, вишня-шоколад, кокос-миндаль, клубника, карамель-орех" },
+      { cat: "Десерты", name: "Фирменный Наполеон «Шоколад - Baileys»", price: 390, weight: "130 г" },
+      { cat: "Десерты", name: "Сырники творожные со сметаной (вишня / клубника)", price: 290, weight: "120 г" },
+      { cat: "Десерты", name: "Яблочный штрудель", price: 320, weight: "165 г" },
+      { cat: "Десерты", name: "Меренговый рулет (клубника / смородина)", price: 290, weight: "130 г" },
+      { cat: "Десерты", name: "Лимонный тирамису", price: 290, weight: "130 г" },
+      { cat: "Десерты", name: "Фруктовая тарелка", price: 950, weight: "800 г", desc: "Яблоко, груша, апельсин, ананас, киви, виноград" },
+      { cat: "Десерты", name: "Мороженое в ассортименте", price: 320, weight: "150 г" }
+    ];
+
+    let cart = {};
+    let activeCat = "Все";
+
+    function init() {
+      const savedName = localStorage.getItem("guest_name");
+      if (savedName) document.getElementById("userName").value = savedName;
+
+      const cats = ["Все", ...new Set(MENU.map(i => i.cat))];
+      const catBox = document.getElementById("categoryContainer");
+      catBox.innerHTML = cats.map(c => 
+        `<button class="cat-btn ${c === activeCat ? 'active' : ''}" onclick="filterCat('${c}')">${c}</button>`
+      ).join("");
+
+      renderItems();
+    }
+
+    function saveName() {
+      localStorage.setItem("guest_name", document.getElementById("userName").value.trim());
+    }
+
+    function filterCat(c) {
+      activeCat = c;
+      document.querySelectorAll(".cat-btn").forEach(b => b.classList.toggle("active", b.innerText === c));
+      renderItems();
+    }
+
+    function renderItems() {
+      const search = (document.getElementById("searchInput").value || "").toLowerCase().trim();
+      let filtered = activeCat === "Все" ? MENU : MENU.filter(i => i.cat === activeCat);
+
+      if (search) {
+        filtered = filtered.filter(i => 
+          i.name.toLowerCase().includes(search) || 
+          (i.desc && i.desc.toLowerCase().includes(search))
+        );
+      }
+
+      const box = document.getElementById("itemsContainer");
+      if (filtered.length === 0) {
+        box.innerHTML = `<div style="text-align:center; padding:30px 10px; color:var(--text-muted); font-size:14px;">Ничего не найдено</div>`;
+        return;
+      }
+
+      box.innerHTML = filtered.map(item => {
+        const qty = cart[item.name] || 0;
+        return `
+          <div class="item-card">
+            <div class="item-info">
+              <div class="item-title">${item.name}</div>
+              ${item.desc ? `<div class="item-desc">${item.desc}</div>` : ''}
+              <div>
+                <span class="item-meta">${item.price} ₽</span>
+                <span class="item-weight">${item.weight}</span>
+              </div>
+            </div>
+            <div class="counter">
+              <button onclick="changeQty('${item.name}', -1)">-</button>
+              <span>${qty}</span>
+              <button onclick="changeQty('${item.name}', 1)">+</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+      updateTotals();
+    }
+
+    function changeQty(name, delta) {
+      const current = cart[name] || 0;
+      const next = current + delta;
+      if (next > 0) cart[name] = next;
+      else delete cart[name];
+      renderItems();
+    }
+
+    function updateTotals() {
+      let sum = 0;
+      let count = 0;
+      for (const [name, qty] of Object.entries(cart)) {
+        const item = MENU.find(m => m.name === name);
+        if (item) {
+          sum += item.price * qty;
+          count += qty;
+        }
+      }
+      document.getElementById("totalPrice").innerText = `${sum.toLocaleString("ru-RU")} ₽`;
+      document.getElementById("totalCount").innerText = count ? `Выбрано позиций: ${count}` : "Блюд не выбрано";
+    }
+
+    function getFormattedText() {
+      const name = document.getElementById("userName").value.trim() || "Гость";
+      let lines = [`Заказ [${name}]:`];
+      let sum = 0;
+      for (const [nameItem, qty] of Object.entries(cart)) {
+        const item = MENU.find(m => m.name === nameItem);
+        if (item) {
+          const cost = item.price * qty;
+          sum += cost;
+          lines.push(`• ${item.name} — ${qty} шт. (${cost} ₽)`);
+        }
+      }
+      lines.push(`────────────────────`);
+      lines.push(`Итого к оплате: ${sum.toLocaleString("ru-RU")} ₽`);
+      return { text: lines.join("\n"), sum, count: Object.keys(cart).length };
+    }
+
+    function openOrderModal() {
+      const { text, count } = getFormattedText();
+      if (count === 0) {
+        alert("Выберите хотя бы одно блюдо в меню");
+        return;
+      }
+      document.getElementById("modalOrderList").innerText = text;
+      document.getElementById("orderModal").classList.add("active");
+    }
+
+    function closeOrderModal() {
+      document.getElementById("orderModal").classList.remove("active");
+    }
+
+    function copyOrderText() {
+      const { text } = getFormattedText();
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Заказ скопирован в буфер обмена! Вставьте его в ваш чат.");
+      });
+    }
+
+    function shareToTelegram() {
+      const { text } = getFormattedText();
+      const url = `https://t.me/share/url?text=${encodeURIComponent(text)}`;
+      window.open(url, "_blank");
+    }
+
+    init();
+  </script>
+</body>
+</html>
