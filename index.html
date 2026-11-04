@@ -395,10 +395,23 @@
     }
 
     function shareToTelegram() {
-      const { text } = getFormattedText();
-      const url = `https://t.me/share/url?text=${encodeURIComponent(text)}`;
-      window.open(url, "_blank");
-    }
+  const { text } = getFormattedText();
+  const encodedText = encodeURIComponent(text);
+  
+  // Прямой вызов установленного приложения Telegram
+  const tgAppUrl = `tg://msg_url?url=&text=${encodedText}`;
+  // Резервная веб-ссылка с обязательным параметром url
+  const tgWebUrl = `https://t.me/share/url?url=%20&text=${encodedText}`;
+
+  // Пробуем запустить приложение
+  window.location.href = tgAppUrl;
+
+  // Если приложение не открылось за 500 мс (например, на ПК без клиента), открываем веб-версию
+  setTimeout(() => {
+    window.open(tgWebUrl, "_blank");
+  }, 500);
+}
+
 
     init();
   </script>
